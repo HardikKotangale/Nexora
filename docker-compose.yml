@@ -1,0 +1,122 @@
+version: '3.8'
+
+services:
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: nexora
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  ollama-init:
+    image: ollama/ollama
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: ["/bin/sh", "-c", "ollama pull llama3.2 && ollama pull nomic-embed-text"]
+    restart: "no"
+
+  backend:
+    build: ./backend
+    command: >
+      bash -c "python manage.py migrate && gunicorn nexora_backend.wsgi:application --bind 0.0.0.0:8000 --workers 2"
+    volumes:
+      - ./backend:/app
+      - ./media:/app/../media
+      - whisper_cache:/root/.cache
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DB_HOST=postgres
+      - DB_NAME=nexora
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - PGVECTOR_CONNECTION_STRING=postgresql+psycopg2://postgres:password@postgres:5432/nexora
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+
+  celery:
+    build: ./backend
+    command: celery -A nexora_backend worker --loglevel=info
+    volumes:
+      - ./backend:/app
+      - ./media:/app/../media
+      - whisper_cache:/root/.cache
+    env_file:
+      - .env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DB_HOST=postgres
+      - DB_NAME=nexora
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - PGVECTOR_CONNECTION_STRING=postgresql+psycopg2://postgres:password@postgres:5432/nexora
+      - OLLAMA_BASE_URL=http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  ollama_data:
+  whisper_cache:

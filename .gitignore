@@ -1,0 +1,56 @@
+# ── Python ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+backend/venv/
+backend/env/
+backend/db.sqlite3
+
+# ── Secrets ───────────────────────────────────────────────
+.env
+*.json.key
+service-account*.json
+
+# ── Node ──────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.env
+frontend/.env.*
+*.local
+
+# ── Media & AI data ───────────────────────────────────────
+media/
+chroma_db/
+cloud_storage/
+*.mp3
+*.wav
+*.m4a
+*.ogg
+*.flac
+*.webm
+
+# ── Docker ────────────────────────────────────────────────
+# Do not commit Docker volumes or override files
+docker-compose.override.yml
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── IDEs ──────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Agent directories ─────────────────────────────────────
+.agents/
+.agent/
+_agents/
+_agent/
+.gemini/

@@ -1,0 +1,18 @@
+Django>=5.1,<6.0
+djangorestframework
+django-cors-headers
+celery
+redis
+gunicorn
+
+# Transcription (local, no API key needed)
+faster-whisper
+
+# Database (PostgreSQL + pgvector for RAG)
+psycopg2-binary
+
+# RAG / LangChain + Ollama
+langchain
+langchain-community
+langchain-ollama
+langchain-text-splitters
