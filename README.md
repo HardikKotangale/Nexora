@@ -74,14 +74,7 @@ Nexora/
 
 ## Setup & Running
 
-### Step 1 — Clone the repository
-
-```bash
-git clone <your-repo-url>
-cd Nexora
-```
-
-### Step 2 — Create your environment file
+### Step 1 — Create your environment file
 
 ```bash
 cp .env.example .env
@@ -97,7 +90,7 @@ ALLOWED_HOSTS=*
 
 That is the **only required change**. No API keys needed.
 
-### Step 3 — Build and start all services
+### Step 2 — Build and start all services
 
 ```bash
 docker compose up --build
@@ -117,7 +110,7 @@ This single command will:
 
 > **First run takes 5–15 minutes** depending on your internet speed (Ollama model downloads). Every subsequent start takes under 30 seconds.
 
-### Step 4 — Open the app
+### Step 3 — Open the app
 
 | Service | URL |
 |---|---|
